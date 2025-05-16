@@ -1,5 +1,11 @@
 package edu.kit.kastel.vads.compiler.backend.aasm;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import edu.kit.kastel.vads.compiler.backend.CodeGenerator;
 import edu.kit.kastel.vads.compiler.backend.regalloc.Register;
 import edu.kit.kastel.vads.compiler.ir.IrGraph;
 import edu.kit.kastel.vads.compiler.ir.node.AddNode;
@@ -15,16 +21,11 @@ import edu.kit.kastel.vads.compiler.ir.node.ProjNode;
 import edu.kit.kastel.vads.compiler.ir.node.ReturnNode;
 import edu.kit.kastel.vads.compiler.ir.node.StartNode;
 import edu.kit.kastel.vads.compiler.ir.node.SubNode;
-
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import static edu.kit.kastel.vads.compiler.ir.util.NodeSupport.predecessorSkipProj;
 
-public class CodeGenerator {
+public class AbstractAssemblerGenerator implements CodeGenerator {
 
+    @Override
     public String generateCode(List<IrGraph> program) {
         StringBuilder builder = new StringBuilder();
         for (IrGraph graph : program) {
@@ -52,6 +53,7 @@ public class CodeGenerator {
         }
 
         switch (node) {
+    
             case AddNode add -> binary(builder, registers, add, "add");
             case SubNode sub -> binary(builder, registers, sub, "sub");
             case MulNode mul -> binary(builder, registers, mul, "mul");

@@ -1,6 +1,12 @@
 package edu.kit.kastel.vads.compiler;
 
-import edu.kit.kastel.vads.compiler.backend.aasm.CodeGenerator;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+
+import edu.kit.kastel.vads.compiler.backend.asm.L1AssemblerGenerator;
 import edu.kit.kastel.vads.compiler.ir.IrGraph;
 import edu.kit.kastel.vads.compiler.ir.SsaTranslation;
 import edu.kit.kastel.vads.compiler.ir.optimize.LocalValueNumbering;
@@ -13,11 +19,6 @@ import edu.kit.kastel.vads.compiler.parser.ast.FunctionTree;
 import edu.kit.kastel.vads.compiler.parser.ast.ProgramTree;
 import edu.kit.kastel.vads.compiler.semantic.SemanticAnalysis;
 import edu.kit.kastel.vads.compiler.semantic.SemanticException;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 
 public class Main {
     public static void main(String[] args) throws IOException {
@@ -26,8 +27,13 @@ public class Main {
             System.exit(3);
         }
         Path input = Path.of(args[0]);
-        Path output = Path.of(args[1]);
+        String filename = args[1];
+        Path output = Path.of(filename);
+
+        System.out.println("Output: " + filename);
+
         ProgramTree program = lexAndParse(input);
+        
         try {
             new SemanticAnalysis(program).analyze();
         } catch (SemanticException e) {
@@ -48,10 +54,21 @@ public class Main {
                 dumpGraph(graph, tmp, "before-codegen");
             }
         }
+        
+        // String s = new AbstractAssemblerGenerator().generateCode(graphs);
+        // Files.writeString(output, s);
+        
+        Path outputAsmPath = Path.of(filename + ".s");
+        
+        String asm = new L1AssemblerGenerator().generateCode(graphs); 
+        Files.writeString(outputAsmPath, asm);
+        
+        // Directly invoke gcc to link the assembly
+        String gccCommand = "gcc " + input.toString() + " -o " + filename;
+        System.out.println(gccCommand);
 
-        // TODO: generate assembly and invoke gcc instead of generating abstract assembly
-        String s = new CodeGenerator().generateCode(graphs);
-        Files.writeString(output, s);
+        Runtime.getRuntime().exec(gccCommand);
+
     }
 
     private static ProgramTree lexAndParse(Path input) throws IOException {
