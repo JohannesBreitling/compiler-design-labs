@@ -1,0 +1,1 @@
+./crow-client run-tests --test-dir ./tests/ --compiler-run ./run.sh

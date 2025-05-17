@@ -15,14 +15,14 @@ class X86RegisterSet {
     public X86RegisterSet() {
         // Construct the register set with the registers we can use for our computation
         this.registersUsed = new HashMap<>();
-        this.registersUsed.put(new X86Register("r8"), false);
-        this.registersUsed.put(new X86Register("r9"), false);
-        this.registersUsed.put(new X86Register("r10"), false);
-        this.registersUsed.put(new X86Register("r11"), false);
-        this.registersUsed.put(new X86Register("r12"), false);
-        this.registersUsed.put(new X86Register("r13"), false);
-        this.registersUsed.put(new X86Register("r14"), false);
-        this.registersUsed.put(new X86Register("r15"), false);
+        this.registersUsed.put(new X86Register("r8d"), false);
+        this.registersUsed.put(new X86Register("r9d"), false);
+        this.registersUsed.put(new X86Register("r10d"), false);
+        this.registersUsed.put(new X86Register("r11d"), false);
+        this.registersUsed.put(new X86Register("r12d"), false);
+        this.registersUsed.put(new X86Register("r13d"), false);
+        this.registersUsed.put(new X86Register("r14d"), false);
+        this.registersUsed.put(new X86Register("r15d"), false);
     }
 
     public X86Register reserveRegister() {

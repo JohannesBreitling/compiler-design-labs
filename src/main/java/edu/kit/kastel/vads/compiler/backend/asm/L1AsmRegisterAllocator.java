@@ -30,12 +30,8 @@ public class L1AsmRegisterAllocator implements RegisterAllocator {
         visited.add(graph.endBlock());
         scan(graph.endBlock(), visited, freedNodes);
         
-        for (Node node : this.registers.keySet()) {
-            System.err.println("Node : " + node.toString() + " has register " + this.registers.get(node).toString());
-        }
-        
         return Map.copyOf(this.registers);
-    } 
+    }
 
     private void scan(Node node, Set<Node> visited, Set<Node> freedNodes) {
         for (Node predecessor : node.predecessors()) {
@@ -50,6 +46,9 @@ public class L1AsmRegisterAllocator implements RegisterAllocator {
             // Utilize that the IR is SSA which means that at a node, only the registers from the predecessors of the node are live 
             this.registers.put(node, registerSet.reserveRegister());
         }
+
+
+        // TODO Change the freeing of registers, first check if they have other successors...
 
         // Free the register used for the nodes before
         for (Node predecessor : node.predecessors()) {

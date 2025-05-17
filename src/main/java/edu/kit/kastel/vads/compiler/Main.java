@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.kit.kastel.vads.compiler.backend.asm.CommandLineRunner;
 import edu.kit.kastel.vads.compiler.backend.asm.L1AssemblerGenerator;
 import edu.kit.kastel.vads.compiler.ir.IrGraph;
 import edu.kit.kastel.vads.compiler.ir.SsaTranslation;
@@ -26,13 +27,25 @@ public class Main {
             System.err.println("Invalid arguments: Expected one input file and one output file");
             System.exit(3);
         }
-        Path input = Path.of(args[0]);
-        String filename = args[1];
-        Path output = Path.of(filename);
 
-        System.out.println("Output: " + filename);
+        Path inputPath = Path.of(args[0]);
+        String output = args[1];
+        Path outputAsmPath = Path.of(output + ".s");
+        Path outputPath = Path.of(output);
 
-        ProgramTree program = lexAndParse(input);
+        System.out.println("Input Path : " + inputPath.toString());
+        System.out.println("Assembler Path : " + outputAsmPath.toString());
+        System.out.println("Output Path : " + outputPath.toString());
+
+
+        // Path input = Path.of(args[1]);
+        // String filename = args[0];
+        // Path output = Path.of(filename);
+
+        // System.out.println("Input: " + args[0]);
+        // System.out.println("Output: " + args[1]);
+
+        ProgramTree program = lexAndParse(inputPath);
         
         try {
             new SemanticAnalysis(program).analyze();
@@ -48,7 +61,7 @@ public class Main {
         }
 
         if ("vcg".equals(System.getenv("DUMP_GRAPHS")) || "vcg".equals(System.getProperty("dumpGraphs"))) {
-            Path tmp = output.toAbsolutePath().resolveSibling("graphs");
+            Path tmp = outputPath.toAbsolutePath().resolveSibling("graphs");
             Files.createDirectory(tmp);
             for (IrGraph graph : graphs) {
                 dumpGraph(graph, tmp, "before-codegen");
@@ -58,17 +71,13 @@ public class Main {
         // String s = new AbstractAssemblerGenerator().generateCode(graphs);
         // Files.writeString(output, s);
         
-        Path outputAsmPath = Path.of(filename + ".s");
         
         String asm = new L1AssemblerGenerator().generateCode(graphs); 
         Files.writeString(outputAsmPath, asm);
         
         // Directly invoke gcc to link the assembly
-        String gccCommand = "gcc " + input.toString() + " -o " + filename;
-        System.out.println(gccCommand);
-
-        Runtime.getRuntime().exec(gccCommand);
-
+        CommandLineRunner cmd = new CommandLineRunner();
+        cmd.invokeGcc(outputAsmPath, outputPath);
     }
 
     private static ProgramTree lexAndParse(Path input) throws IOException {

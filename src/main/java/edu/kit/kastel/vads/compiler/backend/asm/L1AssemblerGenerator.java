@@ -104,12 +104,16 @@ public class L1AssemblerGenerator implements CodeGenerator {
     private void divOperation(StringBuilder result, BinaryOperationNode node) {
         assert(node instanceof DivNode || node instanceof ModNode);
         
-        // Move the dividend to %EAX
+        // Move the dividend to %eax
         result
             .repeat(" ", 2)
             .append("MOV ")
             .append(this.registers.get(predecessorSkipProj(node, BinaryOperationNode.LEFT)))
-            .append(", %EAX\n");
+            .append(", %eax\n");
+
+        // Clear the %edx
+        result
+            .append("  XOR %edx, %edx\n");
         
         // Divide by the divisor
         result
@@ -118,12 +122,19 @@ public class L1AssemblerGenerator implements CodeGenerator {
             .append(this.registers.get(predecessorSkipProj(node, BinaryOperationNode.RIGHT)))
             .append("\n");
 
+        
+        // Get the register to return the result into
+        String resultRegister = this.registers.get(node).toString();
         if (node instanceof DivNode) {
-            // Return the result of the division (already in %eax)    
+            // Return the result of the division (already in %eax)
+            result.append("  MOV %eax, ");
         } else {
             // Return the remainder of the division
-            result.append("  MOV %EDX, %EAX\n");
+            result.append("  MOV %edx, ");
         }
+
+        result.append(resultRegister)
+            .append("\n");
     }
 
     private void constInt(StringBuilder result, ConstIntNode node) {
@@ -140,9 +151,9 @@ public class L1AssemblerGenerator implements CodeGenerator {
     private void returnOp(StringBuilder result, ReturnNode r) {
         result.append("  MOV ")
             .append(registers.get(predecessorSkipProj(r, ReturnNode.RESULT)))
-            .append(", %rax\n");
+            .append(", %eax\n");
 
-        result.append("  ret\n");
+        result.append("  RET\n");
     }
 
     private Map<Node, Register> registers;
