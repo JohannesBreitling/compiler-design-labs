@@ -13,7 +13,6 @@ import edu.kit.kastel.vads.compiler.ir.node.Node;
 import edu.kit.kastel.vads.compiler.ir.node.ProjNode;
 import edu.kit.kastel.vads.compiler.ir.node.ReturnNode;
 import edu.kit.kastel.vads.compiler.ir.node.StartNode;
-import edu.kit.kastel.vads.compiler.ir.util.GraphVizPrinter;
 
 
 
@@ -25,9 +24,6 @@ public class L1AsmRegisterAllocator implements RegisterAllocator {
         Set<Node> assigned = new HashSet<>();
         Set<Node> freed = new HashSet<>();
 
-        System.out.println("Print the graph: ");
-        System.out.println(GraphVizPrinter.print(graph));
-
         this.graph = graph;
         registerSet = new X86RegisterSet();
         this.registers = new HashMap<>();
@@ -35,7 +31,13 @@ public class L1AsmRegisterAllocator implements RegisterAllocator {
         visited.add(graph.endBlock());
         scan(graph.endBlock(), visited, assigned, freed);
         
+        // printRegisters();
+        
         return Map.copyOf(this.registers);
+    }
+
+    public int getMaxOffset() {
+        return registerSet.getMaxOffset();
     }
 
     private void scan(Node node, Set<Node> visited, Set<Node> assigned, Set<Node> freed) {
@@ -75,6 +77,12 @@ public class L1AsmRegisterAllocator implements RegisterAllocator {
         this.registerSet.freeRegister(this.registers.get(node));
     }
 
+    private void printRegisters() {
+        for (Node node : registers.keySet()) {
+            System.out.println(node.toString() + " has register : " + registers.get(node).toString());
+        }
+    }
+
     private static boolean needsRegister(Node node) {
         return !(node instanceof ProjNode || node instanceof StartNode || node instanceof Block || node instanceof ReturnNode);
     }
@@ -82,5 +90,5 @@ public class L1AsmRegisterAllocator implements RegisterAllocator {
     private X86RegisterSet registerSet;
     private Map<Node, Register> registers;
     private IrGraph graph;
-
+    private int maxOffset;
 } 
