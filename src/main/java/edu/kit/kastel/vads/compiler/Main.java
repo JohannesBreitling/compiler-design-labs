@@ -37,14 +37,6 @@ public class Main {
         System.out.println("Assembler Path : " + outputAsmPath.toString());
         System.out.println("Output Path : " + outputPath.toString());
 
-
-        // Path input = Path.of(args[1]);
-        // String filename = args[0];
-        // Path output = Path.of(filename);
-
-        // System.out.println("Input: " + args[0]);
-        // System.out.println("Output: " + args[1]);
-
         ProgramTree program = lexAndParse(inputPath);
         
         try {

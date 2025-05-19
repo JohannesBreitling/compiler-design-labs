@@ -1,5 +1,9 @@
 package edu.kit.kastel.vads.compiler.parser;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import edu.kit.kastel.vads.compiler.Span;
 import edu.kit.kastel.vads.compiler.lexer.Identifier;
 import edu.kit.kastel.vads.compiler.lexer.Keyword;
 import edu.kit.kastel.vads.compiler.lexer.KeywordType;
@@ -8,7 +12,6 @@ import edu.kit.kastel.vads.compiler.lexer.Operator;
 import edu.kit.kastel.vads.compiler.lexer.Operator.OperatorType;
 import edu.kit.kastel.vads.compiler.lexer.Separator;
 import edu.kit.kastel.vads.compiler.lexer.Separator.SeparatorType;
-import edu.kit.kastel.vads.compiler.Span;
 import edu.kit.kastel.vads.compiler.lexer.Token;
 import edu.kit.kastel.vads.compiler.parser.ast.AssignmentTree;
 import edu.kit.kastel.vads.compiler.parser.ast.BinaryOperationTree;
@@ -29,9 +32,6 @@ import edu.kit.kastel.vads.compiler.parser.ast.TypeTree;
 import edu.kit.kastel.vads.compiler.parser.symbol.Name;
 import edu.kit.kastel.vads.compiler.parser.type.BasicType;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class Parser {
     private final TokenSource tokenSource;
 
@@ -50,6 +50,9 @@ public class Parser {
     private FunctionTree parseFunction() {
         Keyword returnType = this.tokenSource.expectKeyword(KeywordType.INT);
         Identifier identifier = this.tokenSource.expectIdentifier();
+        if (!identifier.value().equals("main")) {
+            throw new ParseException("expected main function but got " + identifier);
+        }
         this.tokenSource.expectSeparator(SeparatorType.PAREN_OPEN);
         this.tokenSource.expectSeparator(SeparatorType.PAREN_CLOSE);
         BlockTree body = parseBlock();

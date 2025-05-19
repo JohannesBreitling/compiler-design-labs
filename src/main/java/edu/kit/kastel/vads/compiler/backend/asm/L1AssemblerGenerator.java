@@ -38,7 +38,32 @@ public class L1AssemblerGenerator implements CodeGenerator {
 
 
     private StringBuilder initAssembly() {
-        return new StringBuilder(".global main\n.global _main\n.text\n\nmain:\ncall _main\n\nmovq %rax, %rdi\nmovq $0x3C, %rax\nsyscall\n\n_main:\n");
+        StringBuilder initial = new StringBuilder();
+        
+        initial
+            .append(".global main\n")
+            .append(".global _main\n")
+            .append(".global _overflow\n")
+            .append("\n")
+            .append(".text\n\n")
+            .append("main:\n")
+            .append("  call _main\n")
+            .append("  movq %rax, %rdi\n")
+            .append("  movq $0x3C, %rax\n")
+            .append("  syscall\n\n")
+            .append("_overflow:\n")
+            .append("  mov $0, %ebx\n")
+            .append("  div %ebx\n\n")
+            // .append("  mov $37, %eax\n")
+            // .append("  mov $0, %ebx\n")
+            // .append("  mov $8, %ecx\n")
+            // .append("  int $0x80\n")
+            // .append("  syscall\n\n")
+            .append("\n")
+            .append("_main:\n");
+        
+        
+        return initial;
     }
 
     private void generateCodeForGraph(IrGraph graph, StringBuilder result) {            
@@ -82,9 +107,9 @@ public class L1AssemblerGenerator implements CodeGenerator {
         }
     }
 
-    private void simpleBinaryOperation(StringBuilder builder, BinaryOperationNode node, String opcode) {
+    private void simpleBinaryOperation(StringBuilder result, BinaryOperationNode node, String opcode) {
         // First move the first argument into the target register
-        builder.repeat(" ", 2)
+        result.repeat(" ", 2)
             .append("MOV ")
             .append(registers.get(predecessorSkipProj(node, BinaryOperationNode.LEFT)))
             .append(", ")
@@ -92,13 +117,18 @@ public class L1AssemblerGenerator implements CodeGenerator {
             .append("\n");
         
         // Perform the operation
-        builder.repeat(" ", 2)
+        result.repeat(" ", 2)
             .append(opcode)
             .append(" ")
             .append(registers.get(predecessorSkipProj(node, BinaryOperationNode.RIGHT)))
             .append(", ")
             .append(registers.get(node))
             .append("\n");
+
+        // // Add overflow if the operation is a mutliplication
+        // if (node instanceof MulNode)
+        //     result.append("  JO _overflow\n");
+        
     }
 
     private void divOperation(StringBuilder result, BinaryOperationNode node) {
@@ -111,16 +141,20 @@ public class L1AssemblerGenerator implements CodeGenerator {
             .append(this.registers.get(predecessorSkipProj(node, BinaryOperationNode.LEFT)))
             .append(", %eax\n");
 
-        // Clear the %edx
-        result
-            .append("  XOR %edx, %edx\n");
+        // // Clear the %edx
+        // result
+        //     .append("  XOR %edx, %edx\n");
         
+        result.append("  cdq\n");
+
         // Divide by the divisor
         result
             .repeat(" ", 2)
             .append("IDIV ")
             .append(this.registers.get(predecessorSkipProj(node, BinaryOperationNode.RIGHT)))
             .append("\n");
+        
+        // result.append("  JO _overflow\n");
 
         
         // Get the register to return the result into

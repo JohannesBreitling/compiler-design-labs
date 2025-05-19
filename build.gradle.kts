@@ -27,4 +27,5 @@ java {
 
 tasks.test {
     useJUnitPlatform()
+    enableAssertions = true
 }

@@ -29,6 +29,7 @@ class X86RegisterSet {
         for (var key : registersUsed.keySet()) {
             if (!registersUsed.get(key)) {
                 registersUsed.put(key, true);
+                // System.out.println("Reseverd: " + key.toString());
                 return key;
             }
         }
@@ -38,9 +39,11 @@ class X86RegisterSet {
     }
 
     public void freeRegister(Register register) {
-        assert(register instanceof X86Register);
-        assert(registersUsed.containsKey((X86Register) register));
-        registersUsed.put((X86Register) register, false);
+        X86Register converted = (X86Register) register;
+
+        assert registersUsed.containsKey(converted);
+        // System.out.println("Freed: " + converted.toString());
+        registersUsed.put(converted, false);
     }
 
 
